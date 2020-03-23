@@ -1,9 +1,12 @@
 import React, { Component } from 'react'
 import classes from './Quiz.module.scss'
 import ActiveQuiz from '../../components/ActiveQuiz/ActiveQuiz'
+import FinishedQuiz from '../../components/FinishedQuiz/FinishedQuiz'
 
 class Quiz extends Component {
     state = {
+        Results: {},
+        isFinished: false,
         ActiveQuestionNumber: 0,
         AnswerState: null,
         quiz: [
@@ -20,7 +23,7 @@ class Quiz extends Component {
             },
             {
                 question: 'What was SPB born?',
-                id: 1,
+                id: 2,
                 rightAnswer: 2,
                 answers: [
                     { text: '1700', id: 1 },
@@ -33,18 +36,31 @@ class Quiz extends Component {
     }
 
     onAnswerClick = (answerId) => {
+        if(this.state.AnswerState) {
+            if(this.state.AnswerState[answerId] === 'success') {
+                return
+            }
+        }
         const question = this.state.quiz[this.state.ActiveQuestionNumber];
+        const results = this.state.Results;
 
         if (question.rightAnswer === answerId) {
+            if(!results[answerId]) {
+                results[answerId] = 'success'
+            }
+
             this.setState({
-                AnswerState: { [answerId]: 'success' }
+                AnswerState: { [answerId]: 'success' },
+                Results: results
             });
             const timeout = window.setTimeout(() => {
                 this.setState({
                     AnswerState: null
                 })
                 if (this.isQuizFinished()) {
-                    console.log('finished')
+                    this.setState({
+                        isFinished: true
+                    })
                 } else {
                     this.setState({
                         ActiveQuestionNumber: this.state.ActiveQuestionNumber + 1,
@@ -53,7 +69,9 @@ class Quiz extends Component {
                 window.clearTimeout(timeout);
             }, 1000)
         } else {
+            results[answerId] = 'error'
             this.setState({
+                Results: results,
                 AnswerState: { [answerId]: 'error' }
             });
         }
@@ -70,14 +88,22 @@ class Quiz extends Component {
                 <div className={classes['QuizWrapper']}>
 
                     <h1>Answer on question.</h1>
-                    <ActiveQuiz
-                        answers={this.state.quiz[this.state.ActiveQuestionNumber].answers}
-                        question={this.state.quiz[this.state.ActiveQuestionNumber].question}
-                        onAnswerClick={this.onAnswerClick}
-                        questionsLength={this.state.quiz.length}
-                        questionNumber={this.state.ActiveQuestionNumber + 1}
-                        state={this.state.AnswerState}
-                    />
+                    {
+                        this.state.isFinished
+                        ? <FinishedQuiz
+                            results={this.state.Results}
+                            quiz={this.state.quiz}
+                        />
+                        : <ActiveQuiz
+                            answers={this.state.quiz[this.state.ActiveQuestionNumber].answers}
+                            question={this.state.quiz[this.state.ActiveQuestionNumber].question}
+                            onAnswerClick={this.onAnswerClick}
+                            questionsLength={this.state.quiz.length}
+                            questionNumber={this.state.ActiveQuestionNumber + 1}
+                            state={this.state.AnswerState}
+                        />
+                    }
+                    
                 </div>
             </div>
         )
