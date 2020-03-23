@@ -6,7 +6,7 @@ import FinishedQuiz from '../../components/FinishedQuiz/FinishedQuiz'
 class Quiz extends Component {
     state = {
         Results: {},
-        isFinished: false,
+        isFinished: true,
         ActiveQuestionNumber: 0,
         AnswerState: null,
         quiz: [
